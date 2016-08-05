@@ -36,6 +36,7 @@ def make_salt():
 def user_logged_in(self):
     user = None
     u = self.request.cookies.get('name')
+    # TODO: Update cookie with encryption!!
     if u:
         user = User.get_by_id(int(u))
         user.logged_in = True
