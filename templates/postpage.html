@@ -1,0 +1,19 @@
+{% extends "main.html" %}
+
+{% block content %}
+
+  <div class="post">
+    <div class="post-header">
+      <h2 class="post-title">
+        <a href="/{{post.key().id()}}">{{post.title}}</a>
+      </h2>
+      <h5 class="post-user">by {{post.submitter}}</h5>
+    </div>
+    <pre class="post-content">{{post.content | safe}}</pre>
+  </div>
+  {% if user.logged_in and post.submitter_id == user_id %}
+  <a href="/editpost/{{post.key().id()}}" class="link-button">Edit</a>
+  <a href="/" class="link-button">Cancel</a>
+  <a href="/deletepost/{{post.key().id()}}" class="link-button">Remove Post</a>
+  {% endif %}
+{% endblock %}

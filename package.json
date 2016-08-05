@@ -1,0 +1,29 @@
+{
+  "name": "UdacityFSND_blog",
+  "version": "0.5.0",
+  "description": "Blog website for Udacity Full Stack Nanodegree",
+  "main": "gulpfile.js",
+  "devDependencies": {
+    "gulp": "~3.9.1",
+    "gulp-sass": "~2.3.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/acolange/UdacityFSND_blog.git"
+  },
+  "keywords": [
+    "AppEngine",
+    "Python",
+    "Sass",
+    "Gulp",
+    "Jinja"
+  ],
+  "author": "A.J. Colangelo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/acolange/UdacityFSND_blog/issues"
+  }
+}
