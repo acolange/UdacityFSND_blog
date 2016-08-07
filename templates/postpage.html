@@ -13,7 +13,6 @@
   </div>
   {% if user.logged_in and post.submitter_id == user_id %}
   <a href="/editpost/{{post.key().id()}}" class="link-button">Edit</a>
-  <a href="/" class="link-button">Cancel</a>
   <a href="/deletepost/{{post.key().id()}}" class="link-button">Remove Post</a>
   {% endif %}
 {% endblock %}

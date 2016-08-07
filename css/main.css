@@ -40,9 +40,15 @@ input[type=text], input[type=password] {
 input[type=submit] {
   background: #bb0a21;
   color: #fff9fb;
-  margin: 10px;
-  padding: 5px 50px 5px 50px;
-  border: 2px solid #252627; }
+  display: inline-block;
+  font-size: 1em;
+  margin: 10px 10px;
+  padding: 5px 15px 5px 15px;
+  border: 2px solid #252627;
+  -webkit-box-shadow: 2px 2px 5px #555;
+  -moz-box-shadow: 2px 2px 5px #555;
+  -o-box-shadow: 2px 2px 5px #555;
+  box-shadow: 2px 2px 5px #555; }
 
 textarea {
   display: block;
@@ -129,4 +135,21 @@ a {
   display: inline-block;
   margin: 10px 10px;
   padding: 5px 15px 5px 15px;
-  border: 2px solid #252627; }
+  border: 2px solid #252627;
+  -webkit-box-shadow: 2px 2px 5px #555;
+  -moz-box-shadow: 2px 2px 5px #555;
+  -o-box-shadow: 2px 2px 5px #555;
+  box-shadow: 2px 2px 5px #555; }
+
+.like-button {
+  background: #bb0a21;
+  color: #fff9fb;
+  padding: 3px;
+  border: 1px solid #252627;
+  position: absolute;
+  right: 5px;
+  bottom: 3px; }
+
+.like {
+  display: inline;
+  right: 5px; }

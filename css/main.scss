@@ -54,9 +54,15 @@ input[type=text], input[type=password] {
 input[type=submit] {
   background: $lava;
   color: $snow;
-  margin: 10px;
-  padding: 5px 50px 5px 50px;
+  display: inline-block;
+  font-size: 1em;
+  margin: 10px 10px;
+  padding: 5px 15px 5px 15px;
   border: 2px solid $darkgunmetal;
+  -webkit-box-shadow: 2px 2px 5px #555;
+  -moz-box-shadow: 2px 2px 5px #555;
+  -o-box-shadow: 2px 2px 5px #555;
+  box-shadow: 2px 2px 5px #555;
 }
 
 textarea {
@@ -160,4 +166,24 @@ a {
   margin: 10px 10px;
   padding: 5px 15px 5px 15px;
   border: 2px solid $darkgunmetal;
+  -webkit-box-shadow: 2px 2px 5px #555;
+  -moz-box-shadow: 2px 2px 5px #555;
+  -o-box-shadow: 2px 2px 5px #555;
+  box-shadow: 2px 2px 5px #555;
+}
+
+.like-button {
+  background: $lava;
+  color: $snow;
+  padding: 3px;
+  border: 1px solid $darkgunmetal;
+  position: absolute;
+  right: 5px;
+  bottom: 3px;
+}
+
+.like {
+  display: inline;
+  // position: absolute;
+  right: 5px;
 }

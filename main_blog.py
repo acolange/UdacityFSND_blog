@@ -62,6 +62,7 @@ class Post(db.Model):
     content = db.TextProperty(required=True)
     submitter_id = db.IntegerProperty(required=True)
     submitter = db.StringProperty(required=True)
+    likes = db.StringListProperty(required=True)
     created = db.DateTimeProperty(auto_now_add=True)
 
 
@@ -170,7 +171,6 @@ class LoginPage(Handler):
                 self.response.headers.add_header('Set-Cookie',
                                                  'name=%s; Path=/' % str(uid))
                 self.redirect('/welcome')
-        # else:
         error = "Could not login with Username and password"
         self.render('login.html', user={}, user_error=error)
 
@@ -203,18 +203,16 @@ class PostPage(Handler):
     def post(self):
         title = self.request.get("subject")
         content = self.request.get("content")
-        u = self.request.cookies.get('name')
-        if u:
-            logged_in = True
-            user_id = int(u)
-            username = User.get_by_id(int(u))
-        else:
+        user = user_logged_in(self)
+
+        if not user.logged_in:
             redirect('/login')
         if title and content:
             p = Post(title=title,
                      content=content,
-                     submitter_id=user_id,
-                     submitter=username.name)
+                     submitter_id=user.key().id(),
+                     submitter=user.name,
+                     likes=[])
             p.put()
             post_id = p.key().id()
             self.redirect('/' + str(post_id))
@@ -227,8 +225,11 @@ class EditPost(Handler):
     def get(self, post_id):
         logged_in = False
         user = user_logged_in(self)
-        p = Post.get_by_id(int(post_id))
-        self.render("editpost.html", user=user, post=p)
+        if user:
+            p = Post.get_by_id(int(post_id))
+            self.render("editpost.html", user=user, post=p)
+        else:
+            self.redirect("/login")
 
     def post(self, post_id):
         p = Post.get_by_id(int(post_id))
@@ -246,6 +247,19 @@ class DeletePost(Handler):
             p.delete()
         self.redirect("/")
 
+
+class LikePage(Handler):
+    def get(self, post_id):
+        user = user_logged_in(self)
+        p = Post.get_by_id(int(post_id))
+        if user and user.key().id() != p.submitter_id:
+            if user.name not in p.likes:
+                p.likes.append(user.name)
+                p.put()
+            self.redirect("/")
+        else:
+            self.redirect("/login")
+
 app = webapp2.WSGIApplication([('/', MainPage),
                                ('/newpost', PostPage),
                                ('/editpost/(\d+)', EditPost),
@@ -254,5 +268,6 @@ app = webapp2.WSGIApplication([('/', MainPage),
                                ('/login', LoginPage),
                                ('/logout', LogoutPage),
                                ('/welcome', UserPage),
+                               ('/like/(\d+)', LikePage),
                                ('/(\d+)', NewEntry)],
                               debug=True)

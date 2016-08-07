@@ -8,8 +8,18 @@
           <a href="/{{post.key().id()}}">{{post.title}}</a>
         </h2>
         <h5 class="post-user">by {{post.submitter}}</h5>
+        {% if user.logged_in and user.key().id() != post.submitter_id %}
+          <a href="/like/{{post.key().id()}}" class="like-button">Like</a>
+        {% endif %}
       </div>
       <pre class="post-content">{{post.content | safe}}</pre>
+      <div class="likes">Like this:
+        {% for like in post.likes %}
+          <div class="like">{{like}},</div>
+        {% endfor %}
+        ...
+      </div>
+      <!-- {{post.likes}} -->
     </div>
     <!-- TODO: Add "Like" Functionality -->
   {% endfor %}
