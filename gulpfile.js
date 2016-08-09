@@ -26,7 +26,7 @@ gulp.task('devserver', function() {
     function(err, stdout, stderr) {
       console.log(stdout);
       console.log(stderr);
-      cb(err);
+      // cb(err);
   });
 });
 
@@ -35,7 +35,7 @@ gulp.task('deploy', function() {
     function(err, stdout, stderr) {
       console.log(stdout);
       console.log(stderr);
-      cb(err);
+      // cb(err);
     });
 });
 

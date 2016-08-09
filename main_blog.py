@@ -5,7 +5,6 @@ import re
 import hashlib
 import string
 import random
-
 from google.appengine.ext import db
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
@@ -34,13 +33,20 @@ def make_salt():
 
 
 def user_logged_in(self):
+    """Method for checking if a user is logged in via a cookie
+
+    Takes an HTTP request and verifies the user cookie to check the user is
+    logged in.  If a user is logged in the user data is returned.
+
+    """
     user = None
     u = self.request.cookies.get('name')
-    # TODO: Update cookie with encryption!!
     if u:
-        user = User.get_by_id(int(u))
-        user.logged_in = True
-        return user
+        u = u.split('|')
+        if u[1] == hashlib.sha256(u[0] + 'blog').hexdigest():
+            user = User.get_by_id(int(u[0]))
+            user.logged_in = True
+            return user
     else:
         return user
 
@@ -98,8 +104,24 @@ class NewEntry(Handler):
 
 
 class NewUser(Handler):
+    """Handles the User signup page functions.
+
+    Contains a GET request function that renders a signup form.
+    Contains a POST request to submit and validate the user signup information.
+    Validates a valid username, password, and email.   Stores the user into the
+    database along with encrypted login information.
+
+    Attributes:
+        user: User information structure
+        signup_error: Dictionary of errors that can occur during signup.
+
+    """
     def get(self):
-        self.render("signup.html", user={})
+        user = user_logged_in(self)
+        if not user:
+            self.render("signup.html", user={})
+        else:
+            self.render("/")
 
     def post(self):
         signup_error = False
@@ -147,9 +169,12 @@ class NewUser(Handler):
             u = User(name=username, password=h, email=email)
             u.put()
             user_id = u.key().id()
+            cookie = (str(user_id) +
+                      '|' +
+                      hashlib.sha256(str(user_id) + 'blog').hexdigest())
             self.response.headers['Content-Type'] = 'text/plain'
             self.response.headers.add_header('Set-Cookie',
-                                             'name=%s; Path=/' % str(user_id))
+                                             'name=%s; Path=/' % cookie)
             self.redirect("/welcome")
 
 
@@ -167,9 +192,12 @@ class LoginPage(Handler):
             salt = u.password.split('|')[1]
             h = hashlib.sha256(username + password + salt).hexdigest()
             if username == u.name and h == u.password.split('|')[0]:
+                cookie = (str(uid) +
+                          '|' +
+                          hashlib.sha256(str(uid) + 'blog').hexdigest())
                 self.response.headers['Content-Type'] = 'text/plain'
                 self.response.headers.add_header('Set-Cookie',
-                                                 'name=%s; Path=/' % str(uid))
+                                                 'name=%s; Path=/' % cookie)
                 self.redirect('/welcome')
         error = "Could not login with Username and password"
         self.render('login.html', user={}, user_error=error)
