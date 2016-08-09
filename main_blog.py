@@ -52,6 +52,18 @@ def user_logged_in(self):
 
 
 class Handler(webapp2.RequestHandler):
+    """
+
+    Helper class to simplify common calls to the webapp2.RequestHandler.
+
+    write() - Simplifies self.responst.out.write() to self.write()
+
+    render_str() - Simplifies calling a jinja template
+
+    render() - Calls write() on render_str() with a template and optional
+    parameters to render the webpage.
+
+    """
     def write(self, *a, **kw):
         self.response.out.write(*a, **kw)
 
@@ -80,6 +92,11 @@ class User(db.Model):
 
 
 class MainPage(Handler):
+    """
+
+    Class to handle rendering the blog's main page.
+
+    """
     def get(self):
         posts = db.GqlQuery("SELECT * FROM Post "
                             "ORDER BY created DESC LIMIT 10")
@@ -91,6 +108,11 @@ class MainPage(Handler):
 
 
 class NewEntry(Handler):
+    """
+
+    Class to handle the page for displaying a newly created post from the user.
+
+    """
     def get(self, post_id):
         post = Post.get_by_id(int(post_id))
         user = user_logged_in(self)
@@ -124,6 +146,7 @@ class NewUser(Handler):
             self.render("/")
 
     def post(self):
+        # Initialize and fetch data from signup form
         signup_error = False
         params = {}
         email_valid = True
@@ -132,6 +155,7 @@ class NewUser(Handler):
         verify = self.request.get("verify")
         email = self.request.get("email")
 
+        # Verify a valid username, email, password, and matching verfication.
         if not valid_email(email):
             signup_error = True
             params['email_error'] = "Invalid email"
@@ -142,6 +166,8 @@ class NewUser(Handler):
             signup_error = True
             params['user_error'] = "Invalid username"
         else:
+            # Handles checking if a username already exists.
+            # TODO: Should probably make this a function to clean up the code.
             u = db.GqlQuery("Select * FROM User WHERE name = :n", n=username)
             out = []
             for x in u:
@@ -160,6 +186,7 @@ class NewUser(Handler):
             signup_error = True
             params['match_error'] = "Passwords do no match"
 
+        # If the signup is valid we create the user in the database.
         if signup_error:
             self.render("signup.html", user={}, **params)
         else:
@@ -179,6 +206,12 @@ class NewUser(Handler):
 
 
 class LoginPage(Handler):
+    """
+
+    Class that handles creating and submitting the login page and information.
+    The login information is then added to a cookie with enctrypted information.
+
+    """
     def get(self):
         user = user_logged_in(self)
         self.render('login.html', user=user)
@@ -204,6 +237,11 @@ class LoginPage(Handler):
 
 
 class LogoutPage(Handler):
+    """
+
+    Class that handles user logout.
+
+    """
     def get(self):
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers.add_header('Set-Cookie',
@@ -212,6 +250,11 @@ class LogoutPage(Handler):
 
 
 class UserPage(Handler):
+    """
+
+    Class that handles rendering a page welcoming a user at login.
+
+    """
     def get(self):
         user = user_logged_in(self)
         if user:
@@ -221,6 +264,12 @@ class UserPage(Handler):
 
 
 class PostPage(Handler):
+    """
+
+    Class that handles rendering the form to create a post and submits a post
+    to the database.
+
+    """
     def get(self):
         user = user_logged_in(self)
         if user:
@@ -250,6 +299,12 @@ class PostPage(Handler):
 
 
 class EditPost(Handler):
+    """
+
+    Class that handles rendering a page to edit a user's post and submits the
+    updated page to the database.
+
+    """
     def get(self, post_id):
         logged_in = False
         user = user_logged_in(self)
@@ -268,6 +323,12 @@ class EditPost(Handler):
 
 
 class DeletePost(Handler):
+    """
+
+    Class that handles the request to delete a post and remove it from the
+    database.
+
+    """
     def get(self, post_id):
         user = user_logged_in(self)
         p = Post.get_by_id(int(post_id))
@@ -277,6 +338,11 @@ class DeletePost(Handler):
 
 
 class LikePage(Handler):
+    """
+
+    Class that handles the request to like a different user's post.
+
+    """
     def get(self, post_id):
         user = user_logged_in(self)
         p = Post.get_by_id(int(post_id))
