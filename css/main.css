@@ -153,3 +153,7 @@ a {
 .like {
   display: inline;
   right: 5px; }
+
+.comment-form input[type=text] {
+  display: inline-block;
+  width: 75%; }

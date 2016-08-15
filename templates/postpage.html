@@ -10,9 +10,27 @@
       <h5 class="post-user">by {{post.submitter}}</h5>
     </div>
     <pre class="post-content">{{post.content | safe}}</pre>
+    {% if user.logged_in and post.submitter_id == user_id %}
+      <a href="/editpost/{{post.key().id()}}" class="link-button">Edit</a>
+      <a href="/deletepost/{{post.key().id()}}" class="link-button">Remove Post</a>
+    {% endif %}
+    {% if user_id %}
+      <hr>
+      <h4>Submit a Comment</h4>
+      <form method="post" class="comment-form">
+        <input type="text" name="body">
+        <input type="submit">
+      </form>
+    {% endif %}
+    {% if comments %}
+      {% for comment in comments %}
+        <hr>
+        <div class="comment">{{comment.body}}</div>
+        <div class="post-user">by {{comment.submitter}} on <h5 class="post-user">{{comment.created}}</h5></div>
+        {% if user_id == comment.submitter_id %}
+          <a href="">Like</a>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
   </div>
-  {% if user.logged_in and post.submitter_id == user_id %}
-  <a href="/editpost/{{post.key().id()}}" class="link-button">Edit</a>
-  <a href="/deletepost/{{post.key().id()}}" class="link-button">Remove Post</a>
-  {% endif %}
 {% endblock %}

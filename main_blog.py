@@ -5,6 +5,9 @@ import re
 import hashlib
 import string
 import random
+# import user
+# import post
+# import comment
 from google.appengine.ext import db
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
@@ -45,6 +48,7 @@ def user_logged_in(self):
         u = u.split('|')
         if u[1] == hashlib.sha256(u[0] + 'blog').hexdigest():
             user = User.get_by_id(int(u[0]))
+            # self.write(user)
             user.logged_in = True
             return user
     else:
@@ -91,6 +95,14 @@ class User(db.Model):
     created = db.DateTimeProperty(auto_now_add=True)
 
 
+class Comment(db.Model):
+    post_id = db.IntegerProperty(required=True)
+    body = db.TextProperty(required=True)
+    submitter_id = db.IntegerProperty(required=True)
+    submitter = db.StringProperty(required=False)
+    created = db.DateTimeProperty(auto_now_add=True)
+
+
 class MainPage(Handler):
     """
 
@@ -119,10 +131,36 @@ class NewEntry(Handler):
         user_id = None
         if user:
             user_id = user.key().id()
+        comments = {}
+        comments = db.GqlQuery("SELECT * FROM Comment "
+                               "WHERE post_id = :id ORDER BY created DESC",
+                               id=int(post_id))
         self.render("postpage.html",
                     user=user,
                     user_id=user_id,
-                    post=post)
+                    post=post,
+                    comments=comments)
+
+    def post(self, post_id):
+        post = Post.get_by_id(int(post_id))
+        body = self.request.get("body")
+        user = user_logged_in(self)
+        user_id = None
+        if user:
+            user_id = user.key().id()
+
+        comment = Comment(post_id=int(post_id),
+                          body=body,
+                          submitter_id=user_id,
+                          submitter=user.name)
+        comment.put()
+
+        self.redirect("/" + str(post_id))
+        # self.render("postpage.html",
+        #             user=user,
+        #             user_id=user_id,
+        #             post=post,
+        #             comments=comments)
 
 
 class NewUser(Handler):
@@ -209,7 +247,7 @@ class LoginPage(Handler):
     """
 
     Class that handles creating and submitting the login page and information.
-    The login information is then added to a cookie with enctrypted information.
+    The login information is then added to a cookie with enctrypted info.
 
     """
     def get(self):
@@ -283,7 +321,7 @@ class PostPage(Handler):
         user = user_logged_in(self)
 
         if not user.logged_in:
-            redirect('/login')
+            self.redirect('/login')
         if title and content:
             p = Post(title=title,
                      content=content,
@@ -315,11 +353,16 @@ class EditPost(Handler):
             self.redirect("/login")
 
     def post(self, post_id):
+        logged_in = False
+        user = user_logged_in(self)
         p = Post.get_by_id(int(post_id))
-        p.title = self.request.get("subject")
-        p.content = self.request.get("content")
-        p.put()
-        self.redirect("/")
+        if user and user.key().id() == p.submitter_id:
+            p.title = self.request.get("subject")
+            p.content = self.request.get("content")
+            p.put()
+            self.redirect("/")
+        else:
+            self.redirect("/login")
 
 
 class DeletePost(Handler):
