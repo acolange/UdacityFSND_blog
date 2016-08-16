@@ -1,0 +1,42 @@
+{% extends "main.html" %}
+
+{% block content %}
+
+<h2>Edit Comment</h2>
+
+<div class="post">
+  <div class="post-header">
+    <h2 class="post-title">
+      <a href="">{{post.title}}</a>
+    </h2>
+    <h5 class="post-user">by {{post.submitter}}</h5>
+  </div>
+  <pre class="post-content">{{post.content | safe}}</pre>
+
+  {% if user_id %}
+    <hr>
+    <h4>Edit your Comment</h4>
+    <form method="post" class="comment-form">
+      <input type="text" name="body" value="{{comment.body}}">
+      <input type="submit">
+    </form>
+  {% endif %}
+  <!--
+  {% if comments %}
+    {% for comment in comments %}
+      <div class="comment">
+        <hr>
+        <pre class="post-content">{{comment.body}}</pre>
+        <div class="post-user">by {{comment.submitter}} on
+          <h5 class="post-user">{{comment.created}}</h5>
+        </div>
+        {% if user_id == comment.submitter_id %}
+          <a href="/editcomment/{{comment.key().id()}}" class="comment-button">Edit</a>
+          <a href="/editcomment/{{comment.key().id()}}" class="comment-button">Delete</a>
+        {% endif %}
+      </div>
+    {% endfor %}
+  {% endif %} -->
+</div>
+
+{% endblock %}

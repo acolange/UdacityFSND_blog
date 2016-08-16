@@ -42,17 +42,16 @@ def user_logged_in(self):
     logged in.  If a user is logged in the user data is returned.
 
     """
-    user = None
     u = self.request.cookies.get('name')
-    if u:
+    try:
         u = u.split('|')
         if u[1] == hashlib.sha256(u[0] + 'blog').hexdigest():
             user = User.get_by_id(int(u[0]))
             # self.write(user)
             user.logged_in = True
             return user
-    else:
-        return user
+    except:
+        return None
 
 
 class Handler(webapp2.RequestHandler):
@@ -126,41 +125,40 @@ class NewEntry(Handler):
 
     """
     def get(self, post_id):
-        post = Post.get_by_id(int(post_id))
-        user = user_logged_in(self)
-        user_id = None
-        if user:
-            user_id = user.key().id()
-        comments = {}
-        comments = db.GqlQuery("SELECT * FROM Comment "
-                               "WHERE post_id = :id ORDER BY created DESC",
-                               id=int(post_id))
-        self.render("postpage.html",
-                    user=user,
-                    user_id=user_id,
-                    post=post,
-                    comments=comments)
+        try:
+            post = Post.get_by_id(int(post_id))
+            user = user_logged_in(self)
+            user_id = None
+            if user:
+                user_id = user.key().id()
+            comments = {}
+            comments = db.GqlQuery("SELECT * FROM Comment "
+                                   "WHERE post_id = :id ORDER BY created DESC",
+                                   id=int(post_id))
+            self.render("postpage.html",
+                        user=user,
+                        user_id=user_id,
+                        post=post,
+                        comments=comments)
+        except:
+            self.redirect("/")
 
     def post(self, post_id):
         post = Post.get_by_id(int(post_id))
         body = self.request.get("body")
-        user = user_logged_in(self)
-        user_id = None
-        if user:
+        try:
+            user = user_logged_in(self)
             user_id = user.key().id()
 
-        comment = Comment(post_id=int(post_id),
-                          body=body,
-                          submitter_id=user_id,
-                          submitter=user.name)
-        comment.put()
+            comment = Comment(post_id=int(post_id),
+                              body=body,
+                              submitter_id=user_id,
+                              submitter=user.name)
+            comment.put()
 
-        self.redirect("/" + str(post_id))
-        # self.render("postpage.html",
-        #             user=user,
-        #             user_id=user_id,
-        #             post=post,
-        #             comments=comments)
+            self.redirect("/" + str(post_id))
+        except:
+            self.redirect("/login")
 
 
 class NewUser(Handler):
@@ -251,8 +249,12 @@ class LoginPage(Handler):
 
     """
     def get(self):
-        user = user_logged_in(self)
-        self.render('login.html', user=user)
+        try:
+            user = user_logged_in(self)
+            if user.logged_in:
+                self.redirect("/")
+        except:
+            self.render('login.html', user=user)
 
     def post(self):
         username = self.request.get("username")
@@ -373,11 +375,13 @@ class DeletePost(Handler):
 
     """
     def get(self, post_id):
-        user = user_logged_in(self)
-        p = Post.get_by_id(int(post_id))
-        if user.key().id() == p.submitter_id:
-            p.delete()
-        self.redirect("/")
+        try:
+            user = user_logged_in(self)
+            p = Post.get_by_id(int(post_id))
+            if user.key().id() == p.submitter_id:
+                p.delete()
+        except:
+            self.redirect("/")
 
 
 class LikePage(Handler):
@@ -397,6 +401,56 @@ class LikePage(Handler):
         else:
             self.redirect("/login")
 
+
+class EditComment(Handler):
+    """
+
+    Class that handles the request to like a user's comment on a post.
+
+    """
+    def get(self, comment_id):
+        try:
+            user = user_logged_in(self)
+            user_id = user.key().id()
+            comment = Comment.get_by_id(int(comment_id))
+            post = Post.get_by_id(comment.post_id)
+
+            self.render("editcomment.html",
+                        user=user,
+                        user_id=user_id,
+                        post=post,
+                        comment=comment)
+        except:
+            self.redirect("/login")
+
+    def post(self, comment_id):
+        try:
+            user = user_logged_in(self)
+            comment = Comment.get_by_id(int(comment_id))
+            if user and user.key().id() == comment.submitter_id:
+                comment.body = self.request.get("body")
+                comment.put()
+                self.redirect("/" + str(comment.post_id))
+        except:
+            self.redirect("/login")
+
+
+class DeleteComment(Handler):
+    """
+
+    Class that handles the request to delete a comment on a post.
+
+    """
+    def get(self, comment_id):
+        try:
+            user = user_logged_in(self)
+            comment = Comment.get_by_id(int(comment_id))
+            if user.logged_in and user.key().id() == comment.submitter_id:
+                comment.delete()
+            self.redirect("/" + str(comment.post_id))
+        except:
+            self.redirect("/login")
+
 app = webapp2.WSGIApplication([('/', MainPage),
                                ('/newpost', PostPage),
                                ('/editpost/(\d+)', EditPost),
@@ -406,5 +460,7 @@ app = webapp2.WSGIApplication([('/', MainPage),
                                ('/logout', LogoutPage),
                                ('/welcome', UserPage),
                                ('/like/(\d+)', LikePage),
+                               ('/editcomment/(\d+)', EditComment),
+                               ('/deletecomment/(\d+)', DeleteComment),
                                ('/(\d+)', NewEntry)],
                               debug=True)

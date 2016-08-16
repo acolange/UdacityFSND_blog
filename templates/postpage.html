@@ -24,12 +24,17 @@
     {% endif %}
     {% if comments %}
       {% for comment in comments %}
-        <hr>
-        <div class="comment">{{comment.body}}</div>
-        <div class="post-user">by {{comment.submitter}} on <h5 class="post-user">{{comment.created}}</h5></div>
-        {% if user_id == comment.submitter_id %}
-          <a href="">Like</a>
-        {% endif %}
+        <div class="comment">
+          <hr>
+          <pre class="post-content">{{comment.body}}</pre>
+          <div class="post-user">by {{comment.submitter}} on
+            <h5 class="post-user">{{comment.created}}</h5>
+          </div>
+          {% if user_id == comment.submitter_id %}
+            <a href="/editcomment/{{comment.key().id()}}" class="comment-button">Edit</a>
+            <a href="/deletecomment/{{comment.key().id()}}" class="comment-button">Delete</a>
+          {% endif %}
+        </div>
       {% endfor %}
     {% endif %}
   </div>

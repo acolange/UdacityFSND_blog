@@ -13,7 +13,6 @@ body {
 
 header {
   background: #4b88a2;
-  text-shadow: 0 0 3px #fff9fb;
   min-height: 100px;
   text-align: center; }
   header h1 {
@@ -23,7 +22,9 @@ header {
     font-family: "Amatic sc";
     font-size: 5em;
     letter-spacing: 5px;
-    margin: 0; }
+    margin: 0;
+    -webkit-text-stroke: 1px #fff9fb;
+    text-shadow: 0 0 10px #252627; }
 
 main {
   margin: 15px;
@@ -153,6 +154,12 @@ a {
 .like {
   display: inline;
   right: 5px; }
+
+.comment-button {
+  background: #bb0a21;
+  color: #fff9fb;
+  padding: 3px;
+  border: 1px solid #252627; }
 
 .comment-form input[type=text] {
   display: inline-block;
